@@ -238,7 +238,9 @@ export default function App() {
         <aside className="w-1/5 bg-gray-800 p-4 rounded-lg overflow-y-auto">
           <h3 className="font-bold mb-2">Detail Data Terpilih</h3>
 
-          {!info ? (
+          {loading ? (
+            <p className="text-yellow-400">Loading data...</p>
+          ) : !info ? (
             <p>Klik wilayah untuk melihat detail data</p>
           ) : selected.value === "Batas Kecamatan.geojson" ? (
             // === Masih level kabupaten ===
