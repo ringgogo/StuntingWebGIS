@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="/src/index.css" rel="stylesheet">
+  <title>WebGIS Stunting Tapanuli Utara</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #222;
+      color: #fff;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header img {
+      height: 40px;
+    }
+
+    header h1 {
+      font-size: 18px;
+      margin-left: 10px;
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: 1fr 3fr 1fr;
+      grid-template-rows: auto 1fr;
+      height: calc(100vh - 50px);
+      gap: 10px;
+    }
+
+    #stats-left {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      background-color: #333;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #stats-right {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      background-color: #333;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 14px;
+      overflow-y: auto;
+    }
+
+    .stat-box {
+      background-color: #444;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .red-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #b71c1c;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    #map-section {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #top-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #333;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .top-stat-box {
+      background-color: #444;
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      flex: 1;
+      margin: 0 5px;
+    }
+
+    #dropdown-container {
+      flex: 1;
+      text-align: center;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px;
+      background-color: #444;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 5px;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+      width: 100%;
+      border-radius: 5px;
+      background-color: #333;
+    }
+
+    /* Label kotak biru elektrik, kecil dan estetik */
+    .label-box {
+      background-color: rgba(183, 28, 28, 0.85); /* merah boy */
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      font-size: 11px;
+      box-shadow: 0 0 3px #000;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      text-align: center;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .label-box.highlighted {
+      background-color: rgba(255, 69, 69, 0.95); /* warna merah muda cerah */
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 6px #00bfff;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div style="display: flex; align-items: center;">
+      <img src="logo.png" alt="Logo" />
+      <h1>TAPUTKAB.GO.ID - Portal Kabupaten Tapanuli Utara</h1>
+    </div>
+  </header>
+
+  <div id="container">
+    <div id="stats-left">
+      <div class="stat-box"><span class="red-circle"></span>99.865 Kecamatan</div>
+      <div class="stat-box"><span class="red-circle"></span>99.865 Kelurahan/Desa</div>
+      <div class="stat-box">33.047 Keluarga P3KE</div>
+      <div class="stat-box">99.965 Penerima BPNT</div>
+    </div>
+
+    <div id="map-section">
+      <div id="top-stats">
+        <div class="top-stat-box">
+          <h2>23.579</h2>
+          <p>Stunting</p>
+        </div>
+        <div class="top-stat-box">
+          <h2>13.051</h2>
+          <p>Berisiko Stunting</p>
+        </div>
+        <div id="dropdown-container">
+          <select id="mapSelector">
+            <option value="kecamatan">Batas Kecamatan</option>
+            <option value="kel_garoga">Kecamatan Garoga</option>
+            <option value="kel_muara">Kecamatan Muara</option>
+            <option value="kel_pagaran">Kecamatan Pagaran</option>
+            <option value="kel_pahae_jae">Kecamatan Pahae Jae</option>
+            <option value="kel_pahae_julu">Kecamatan Pahae Julu</option>
+            <option value="kel_pangaribuan">Kecamatan Pangaribuan</option>
+            <option value="kel_parmonangan">Kecamatan Parmonangan</option>
+            <option value="kel_purba_tua">Kecamatan Purba Tua</option>
+            <option value="kel_siatas_barita">Kecamatan Siatas Barita</option>
+            <option value="kel_siborong_borong">Kecamatan Siborong Borong</option>
+            <option value="kel_simangumban">Kecamatan Simangumban</option>
+            <option value="kel_sipahutar">Kecamatan Sipahutar</option>
+            <option value="kel_sipoholon">Kecamatan Sipoholon</option>
+            <option value="kel_tarutung">Kecamatan Tarutung</option>
+            <option value="kel_adiankonting">Kecamatan Adiankonting</option>
+          </select>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <div id="stats-right">
+      <h3>Detail Data Terpilih</h3>
+      <div id="infoDetail">Klik wilayah untuk melihat data stunting dan terkait di sini</div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    const map = L.map('map').setView([1.917, 99.0682], 9.5);
+
+    let currentLayer;
+    let currentLabelGroup;
+    let highlightedLayer;
+
+    const defaultStyle = {
+      color: '#000000',
+      weight: 2,
+      fillColor: '#ffffff',
+      fillOpacity: 1,
+    };
+
+    const highlightStyle = {
+      color: '#f00',
+      weight: 3,
+      fillColor: '#f88',
+      fillOpacity: 0.7,
+    };
+
+    // Fungsi update panel info kanan
+    function updateInfoPanel(properties, isKecamatan) {
+  const infoDiv = document.getElementById('infoDetail');
+
+  if (isKecamatan) {
+    infoDiv.innerHTML = `
+      <strong>Kecamatan: ${properties.WADMKC || 'N/A'}</strong><br>
+      Stunting: ${properties.STUNTING || 'N/A'}<br>
+      Risiko Stunting: ${properties['RESIKO STU'] || 'N/A'}
+    `;
+  } else {
+    infoDiv.innerHTML = `
+      <strong>Desa/Kelurahan: ${properties['NAMOBJ'] || 'N/A'}</strong><br>
+      <strong>Jumlah Keluarga:</strong> ${properties['JUMLAH KEL'] || 'N/A'}<br>
+      <strong>Dana Desa:</strong> Rp ${properties['Dana Desa'] || 'N/A'}<br><br>
+
+      <strong>Posyandu:</strong> ${properties['Posyandu'] || 'N/A'}<br>
+      <strong>Jumlah Kader:</strong> ${properties['Jumlah Kader'] || 'N/A'}<br>
+      <strong>Baby Scale (Kondisi Baik):</strong> ${properties['Baby Scale (Kondisi Baik)'] || 'N/A'}<br><br>
+
+      <strong>Risiko Stunting:</strong> ${properties['RESIKO STU'] || 'N/A'}<br>
+      <strong>Stunting:</strong> ${properties['STUNTING'] || 'N/A'}<br><br>
+
+      <u><strong>Indikator Layanan:</strong></u><br>
+      Makanan Ibu Hamil: ${properties['Makanan Ibu Hamil'] || 'N/A'}<br>
+      Pemberian TTD/MMS: ${properties['Pemberian TTD/MMS'] || 'N/A'}<br>
+      Makanan Bergizi Ibu: ${properties['Makanan Bergizi Ibu'] || 'N/A'}<br>
+      Periksa Hamil 6x: ${properties['Periksa Hamil 6x'] || 'N/A'}<br>
+      MPASI: ${properties['MPASI'] || 'N/A'}<br>
+      Asi Berlanjut: ${properties['Asi Berlanjut'] || 'N/A'}<br>
+      Gizi Buruk 0-23: ${properties['Gizi Buruk 0-23'] || 'N/A'}<br>
+      Pantau Tumbuh 0-23: ${properties['Pantau Tumbuh 0-23'] || 'N/A'}<br>
+      Gizi Kurang 0-23: ${properties['Gizi Kurang 0-23'] || 'N/A'}<br>
+      Imunisasi Lengkap 0-23: ${properties['Imunisasi Lengkap 0-23'] || 'N/A'}<br>
+      Diare Zinc 6-23: ${properties['Diare Zinc 6-23'] || 'N/A'}<br>
+      Obat Cacing 6-23: ${properties['Obat Cacing 6-23'] || 'N/A'}<br>
+      Gizi Buruk 24-59: ${properties['Gizi Buruk 24-59'] || 'N/A'}<br>
+      Pantau Tumbuh 24-59: ${properties['Pantau Tumbuh 24-59'] || 'N/A'}<br>
+      Gizi Kurang 24 59: ${properties['Gizi Kurang 24 59'] || 'N/A'}<br>
+      Diare Zinc 24-59: ${properties['Diare Zinc 24-59'] || 'N/A'}<br>
+      Pneumonia 24-59: ${properties['Pneumonia 24-59'] || 'N/A'}<br>
+      Obat Cacing 24-59: ${properties['Obat Cacing 24-59'] || 'N/A'}<br>
+      TTD Remaja: ${properties['TTD Remaja'] || 'N/A'}<br>
+      Skrining Amenia: ${properties['Skrining Amenia'] || 'N/A'}<br>
+      Cek Kesehatan Catin: ${properties['Cek Kesehatan Catin'] || 'N/A'}<br>
+      Bimbingan Catin: ${properties['Bimbingan Catin'] || 'N/A'}<br>
+      Air Minum Aman: ${properties['Air Minum Aman'] || 'N/A'}<br>
+      Sanitasi Aman: ${properties['Sanitasi Aman'] || 'N/A'}<br>
+      JKN: ${properties['JKN'] || 'N/A'}<br>
+      Pendampingan Keluarga: ${properties['Pendampingan Keluarga'] || 'N/A'}<br>
+      Akta Kelahiran Kia: ${properties['Akta Kelahiran Kia'] || 'N/A'}<br>
+      Pemanfaatan Pekarangan: ${properties['Pemanfaatan Pekarangan'] || 'N/A'}
+    `;
+  }
+}
+
+
+
+    // Fungsi untuk memberi highlight pada label sesuai nama
+    function addLabelHighlight(labelText) {
+      if (!currentLabelGroup) return;
+      currentLabelGroup.eachLayer(marker => {
+        const el = marker.getElement();
+        if (!el) return;
+        if (el.textContent === labelText) {
+          el.classList.add('highlighted');
+        } else {
+          el.classList.remove('highlighted');
+        }
+      });
+    }
+
+    function removeLabelHighlight() {
+      if (!currentLabelGroup) return;
+      currentLabelGroup.eachLayer(marker => {
+        const el = marker.getElement();
+        if (el) el.classList.remove('highlighted');
+      });
+    }
+
+    // Fungsi label dengan centroid benar, filter jarak agar tidak bertabrakan
+    function addLabels(data, labelField) {
+      if (currentLabelGroup) {
+        map.removeLayer(currentLabelGroup);
+      }
+      const labels = [];
+      const minDistance = 0.02; // minimal jarak antar label (derajat lat/lng, sesuaikan jika perlu)
+      const placedPoints = [];
+
+      data.features.forEach(feature => {
+        let coords;
+        if (feature.geometry.type === 'Polygon') {
+          coords = feature.geometry.coordinates[0];
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          coords = feature.geometry.coordinates[0][0];
+        } else {
+          return;
+        }
+        let latSum = 0, lngSum = 0;
+        coords.forEach(coord => {
+          lngSum += coord[0];
+          latSum += coord[1];
+        });
+        const centroid = [latSum / coords.length, lngSum / coords.length];
+
+        // Cek jarak dengan label yang sudah ditempatkan
+        const tooClose = placedPoints.some(p => {
+          const dLat = p[0] - centroid[0];
+          const dLng = p[1] - centroid[1];
+          return Math.sqrt(dLat * dLat + dLng * dLng) < minDistance;
+        });
+
+        if (tooClose) return; // skip label yang terlalu dekat
+
+        placedPoints.push(centroid);
+
+        const label = L.marker([centroid[0], centroid[1]], {
+          icon: L.divIcon({
+            className: 'label-box',
+            html: feature.properties[labelField] || '',
+            iconSize: [80, 20],
+            iconAnchor: [40, 10]
+          }),
+          interactive: false
+        });
+        labels.push(label);
+      });
+
+      currentLabelGroup = L.layerGroup(labels).addTo(map);
+      currentLabelGroup.setZIndex(1000);
+    }
+
+    function loadGeoJSON(url, labelField) {
+      if (currentLayer) {
+        map.removeLayer(currentLayer);
+      }
+      if (currentLabelGroup) {
+        map.removeLayer(currentLabelGroup);
+      }
+      if (highlightedLayer) {
+        highlightedLayer = null;
+      }
+
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error('File tidak ditemukan');
+          return response.json();
+        })
+        .then(data => {
+          currentLayer = L.geoJSON(data, {
+            style: defaultStyle,
+            onEachFeature: function (feature, layer) {
+              if (feature.properties) {
+                layer.on({
+                  click: function () {
+                    if (highlightedLayer) {
+                      currentLayer.resetStyle(highlightedLayer);
+                      removeLabelHighlight();
+                    }
+                    layer.setStyle(highlightStyle);
+                    highlightedLayer = layer;
+                    updateInfoPanel(feature.properties, url.includes('Batas Kecamatan'));
+                    addLabelHighlight(feature.properties[labelField]);
+                  },
+                  mouseover: function () {
+                    addLabelHighlight(feature.properties[labelField]);
+                  },
+                  mouseout: function () {
+                    if (highlightedLayer) {
+                      addLabelHighlight(highlightedLayer.feature.properties[labelField]);
+                    } else {
+                      removeLabelHighlight();
+                    }
+                  }
+                });
+              }
+            }
+          }).addTo(map);
+
+          addLabels(data, labelField);
+
+          map.fitBounds(currentLayer.getBounds());
+
+          document.getElementById('infoDetail').innerHTML = 'Klik wilayah untuk melihat data stunting dan terkait di sini';
+        })
+        .catch(error => {
+          console.error('Gagal memuat GeoJSON:', error);
+          alert('Gagal memuat GeoJSON. Pastikan file ada dan jalankan lewat web server.');
+        });
+    }
+
+    document.getElementById('mapSelector').addEventListener('change', (e) => {
+      const value = e.target.value;
+      switch (value) {
+        case 'kecamatan':
+          loadGeoJSON('./Batas Kecamatan.geojson', 'WADMKC');
+          break;
+        case 'kel_garoga':
+          loadGeoJSON('./KEL GAROGA.geojson', 'NAMOBJ');
+          break;
+        case 'kel_muara':
+          loadGeoJSON('./KEL MUARA.geojson', 'NAMOBJ');
+          break;
+        case 'kel_pagaran':
+          loadGeoJSON('./KEL PAGARAN.geojson', 'NAMOBJ');
+          break;
+        case 'kel_pahae_jae':
+          loadGeoJSON('./KEL PAHAE JAE.geojson', 'NAMOBJ');
+          break;
+        case 'kel_pahae_julu':
+          loadGeoJSON('./KEL PAHAE JULU.geojson', 'NAMOBJ');
+          break;
+        case 'kel_pangaribuan':
+          loadGeoJSON('./KEL PANGARIBUAN.geojson', 'NAMOBJ');
+          break;
+        case 'kel_parmonangan':
+          loadGeoJSON('./KEL PARMONANGAN.geojson', 'NAMOBJ');
+          break;
+        case 'kel_purba_tua':
+          loadGeoJSON('./KEL PURBA TUA.geojson', 'NAMOBJ');
+          break;
+        case 'kel_siatas_barita':
+          loadGeoJSON('./KEL SIATAS BARITA.geojson', 'NAMOBJ');
+          break;
+        case 'kel_siborong_borong':
+          loadGeoJSON('./KEL SIBORONG BORONG.geojson', 'NAMOBJ');
+          break;
+        case 'kel_simangumban':
+          loadGeoJSON('./KEL SIMANGUMBAN.geojson', 'NAMOBJ');
+          break;
+        case 'kel_sipahutar':
+          loadGeoJSON('./KEL SIPAHUTAR.geojson', 'NAMOBJ');
+          break;
+        case 'kel_sipoholon':
+          loadGeoJSON('./KEL SIPOHOLON NEW NEW.geojson', 'NAMOBJ');
+          break;
+        case 'kel_tarutung':
+          loadGeoJSON('./KEL TARUTUNG.geojson', 'NAMOBJ');
+          break;
+        case 'kel_adiankonting':
+          loadGeoJSON('./KEL ADIANKONTING.geojson', 'NAMOBJ');
+          break;
+        default:
+          alert('Pilihan tidak dikenali');
+      }
+    });
+
+    // Load default peta kecamatan saat halaman dibuka
+    loadGeoJSON('./Batas Kecamatan.geojson', 'WADMKC');
+  </script>
+</body>
+
+</html>
