@@ -152,19 +152,20 @@ export default function App() {
         slice = entries.slice(37, 64);
         break;
       case "Kategori 3": // BM - CQ
-        slice = entries.slice(64, 93);
+        slice = entries.slice(64, 95);
         break;
       case "Kategori 4": // CR - GY
-        slice = entries.slice(93, 185);
+        slice = entries.slice(95, 204);
+        console.log(slice)
         break;
       case "Kategori 5": // hanya GZ
-        slice = entries.slice(185, 186);
+        slice = entries.slice(204, 205);
         break;
       case "Kategori 6": // HA - HB
-        slice = entries.slice(186, 188);
+        slice = entries.slice(205, 207);
         break;
       case "Kategori 7": // HC - HI
-        slice = entries.slice(188, 195);
+        slice = entries.slice(207, 214);
         break;
     }
 
