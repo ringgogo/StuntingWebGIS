@@ -75,7 +75,6 @@ export default function App() {
   // event handler klik peta
   useEffect(() => {
     const handler = async (e: any) => {
-      console.log(e);
       const detail = e.detail || null;
       setInfo(detail);
 
@@ -104,7 +103,6 @@ export default function App() {
         try {
           const data = await fetchGoogleSheetData(kecamatanName);
           setSheetData(data);
-          console.log("Fetched data for", kecamatanName, data);
         } catch (err) {
           console.error(err);
           setSheetData([]);
@@ -156,7 +154,6 @@ export default function App() {
         break;
       case "Kategori 4": // CR - GY
         slice = entries.slice(95, 204);
-        console.log(slice)
         break;
       case "Kategori 5": // hanya GZ
         slice = entries.slice(204, 205);
@@ -172,7 +169,6 @@ export default function App() {
     // jadikan object kembali
     const kategoriData = Object.fromEntries(slice);
 
-    console.log("Data untuk", kelurahan, "kategori", category, ":", kategoriData);
 
     setPopup({
       title: `Data kategori ${category} untuk ${kelurahan} (${kecamatanName})`,
