@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import MapView from "./components/MapView";
@@ -51,13 +50,27 @@ const kecamatanMapping: Record<string, string> = {
 
 export default function App() {
   const [selected, setSelected] = useState<MapOption>(mapOptions[0]);
+  const [selectedKelurahan, setSelectedKelurahan] = useState<string>("");
   const [info, setInfo] = useState<{ properties?: any; isKecamatan?: boolean } | null>(null);
   const [popup, setPopup] = useState<{ title: string; data: any } | null>(null);
 
   const [sheetData, setSheetData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [areas, setAreas] = useState<Record<string, string[]>>({});
 
-  // contoh fetch data eksternal
+  useEffect(() => {
+    const loadAreas = async () => {
+      try {
+        const res = await fetch("/areas.json");
+        const data = await res.json();
+        setAreas(data);
+      } catch (err) {
+        console.error("Gagal load areas.json", err);
+      }
+    };
+    loadAreas();
+  }, []);
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -125,6 +138,41 @@ export default function App() {
     };
   }, [selected]);
 
+  useEffect(() => {
+    if (!selectedKelurahan) return;
+
+    // bentuk info mirip hasil klik geojson
+    const fakeDetail = {
+      properties: {
+        NAMOBJ: selectedKelurahan,
+      },
+      isKecamatan: false,
+    };
+
+    setInfo(fakeDetail);
+
+    const kecamatanName: string = selected.label.replace("Kecamatan ", "");
+
+    setLoading(true);
+    fetchGoogleSheetData(kecamatanName)
+      .then((data) => {
+        setSheetData(data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setSheetData([]);
+      })
+      .finally(() => setLoading(false));
+  }, [selectedKelurahan, selected]);
+
+  const capitalizeWords = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   const handleCategoryClick = (category: string, detail: any) => {
     const kecamatanName: string = selected.label.replace("Kecamatan ", "");
     const kelurahan = detail.properties?.NAMOBJ?.toUpperCase() || "";
@@ -178,51 +226,98 @@ export default function App() {
 
   return (
     <div className="w-screen min-h-screen bg-gray-900 text-white flex flex-col">
-      <header className="bg-gray-800 p-4 flex items-center">
-        <img src="/logo_taput.png" alt="Logo" className="h-10 mr-3" />
-        <h1 className="text-lg font-semibold">
-          TAPUTKAB.GO.ID - Portal Kabupaten Tapanuli Utara
-        </h1>
+      <header className="bg-gradient-to-r from-gray-700 via-gray-800 to-gray-800 p-4 flex items-center">
+        <div className="flex items-center space-x-3">
+          <img
+            src="/logo_taput.png"
+            alt="Logo"
+            className="h-14 w-14 object-contain drop-shadow-lg"
+          />
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-wide text-white">
+              HUTA SEHAT
+            </h1>
+            <p className="text-sm text-gray-300">
+              Hidup Unggul Tapanuli, Sistem Elektronik Hapus Stunting
+            </p>
+          </div>
+        </div>
       </header>
 
       <div className="flex flex-1 gap-2 p-2">
         {/* Sidebar kiri */}
-        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg">
-          <div className="mb-4 bg-gray-700 p-3 rounded text-center">99.865 Kecamatan</div>
-          <div className="mb-4 bg-gray-700 p-3 rounded text-center">99.865 Kelurahan/Desa</div>
-          <div className="mb-4 bg-gray-700 p-3 rounded text-center">33.047 Keluarga P3KE</div>
-          <div className="bg-gray-700 p-3 rounded text-center">99.965 Penerima BPNT</div>
+        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg space-y-4">
+          {[
+            { label: "Jumlah Penerima BNPT", value: "99.865", color: "from-[#0f2027] to-[#2c5364]" },
+            { label: "Jumlah Penerima BST", value: "99.865", color: "from-[#09203f] to-[#537895]" },
+            { label: "Jumlah Penerima PKH", value: "33.047", color: "from-[#1e3c72] to-[#2a5298]" },
+            { label: "Jumlah Penerima Sembako", value: "99.965", color: "from-[#141e30] to-[#243b55]" },
+            { label: "Jumlah Penerima Prakerja", value: "99.965", color: "from-[#2c3e50] to-[#3498db]" },
+            { label: "Jumlah Penerima KUR", value: "99.965", color: "from-[#000428] to-[#004e92]" },
+            { label: "Jumlah Penerima CBP", value: "99.965", color: "from-[#283e51] to-[#485563]" },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className={`px-4 py-2 rounded-xl shadow-md bg-gradient-to-r ${item.color} transform hover:scale-[1.02] transition`}
+            >
+              <h2 className="text-xl font-extrabold text-white drop-shadow">{item.value}</h2>
+              <p className="text-sm text-white/90">{item.label}</p>
+            </div>
+          ))}
         </aside>
 
         {/* Main content */}
         <main className="flex-1 flex flex-col">
-          <div className="flex justify-between bg-gray-800 p-3 rounded-lg mb-2">
-            <div className="bg-gray-700 p-4 rounded text-center flex-1 mx-1">
-              <h2 className="text-xl font-bold">23.579</h2>
-              <p>Stunting</p>
+          <div className="flex justify-between bg-gray-800 p-3 rounded-lg mb-2 gap-3">
+            <div className="flex-1 mx-1 p-6 rounded-lg bg-gray-700 shadow-md border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
+              <h2 className="text-2xl font-bold text-white">23.579</h2>
+              <p className="text-gray-300 mt-1">Jumlah Data Stunting</p>
             </div>
-            <div className="bg-gray-700 p-4 rounded text-center flex-1 mx-1">
-              <h2 className="text-xl font-bold">13.051</h2>
-              <p>Berisiko Stunting</p>
+            <div className="flex-1 mx-1 p-6 rounded-lg bg-gray-700 shadow-md border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
+              <h2 className="text-2xl font-bold text-white">13.051</h2>
+              <p className="text-gray-300 mt-1">Keluarga Berisiko Stunting</p>
             </div>
-            <div className="flex-1 mx-1">
-              <select
-                onChange={(e) => {
-                  const opt = mapOptions.find((o) => o.value === e.target.value);
-                  if (opt) {
-                    setSelected(opt);
-                    setInfo(null); // reset side panel
-                  }
-                }}
-                value={selected.value}
-                className="w-full p-2 rounded bg-gray-700"
-              >
-                {mapOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+            <div className="flex-1 flex flex-col mx-1 gap-4">
+              {/* Dropdown Kecamatan */}
+              <div className="flex flex-col gap-1">
+                <label className="text-gray-300 font-medium">Pilih Kecamatan</label>
+                <select
+                  onChange={(e) => {
+                    const opt = mapOptions.find((o) => o.value === e.target.value);
+                    if (opt) {
+                      setSelected(opt);
+                      setInfo(null); // reset side panel
+                    }
+                  }}
+                  value={selected.value}
+                  className="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                >
+                  {mapOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Dropdown Kelurahan */}
+              {selected.value !== "Batas Kecamatan.geojson" && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-gray-300 font-medium">Pilih Kelurahan</label>
+                  <select
+                    onChange={(e) => setSelectedKelurahan(e.target.value)}
+                    value={selectedKelurahan}
+                    className="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  >
+                    <option value="">-- Pilih Kelurahan --</option>
+                    {(areas[selected.label.replace("Kecamatan ", "")] || []).map((kel) => (
+                      <option key={kel} value={kel}>
+                        Kelurahan {capitalizeWords(kel)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
@@ -232,77 +327,86 @@ export default function App() {
         </main>
 
         {/* Sidebar kanan */}
-        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg overflow-y-auto">
-          <h3 className="font-bold mb-2">Detail Data Terpilih</h3>
+        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg overflow-y-auto flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <h3 className="font-bold mb-2">Detail Data Terpilih</h3>
 
-          {loading ? (
-            <p className="text-yellow-400">Loading data...</p>
-          ) : !info ? (
-            <p>Klik wilayah untuk melihat detail data</p>
-          ) : selected.value === "Batas Kecamatan.geojson" ? (
-            // === Masih level kabupaten ===
-            <div>
-              <strong>{info.properties?.WADMKC}</strong>
-              <pre className="mt-2 text-xs whitespace-pre-wrap break-all">
-                {JSON.stringify(info.properties, null, 2)}
-              </pre>
-            </div>
-          ) : (
-            // === Level kecamatan / kelurahan ===
-            <div>
-              <strong>{info.properties?.NAMOBJ}</strong>
-              <div className="mt-4 grid grid-cols-1 gap-2">
-                <button
-                  className="text-black w-full py-2 rounded bg-[#ffc000] hover:bg-[#ffa600] transition"
-                  onClick={() => handleCategoryClick("Kategori 1", info)}
-                >
-                  Kategori 1
-                </button>
-
-                <button
-                  className="text-black w-full py-2 rounded bg-[#fff4cc] hover:bg-[#ffd27d] transition"
-                  onClick={() => handleCategoryClick("Kategori 2", info)}
-                >
-                  Kategori 2
-                </button>
-
-                <button
-                  className="text-black w-full py-2 rounded bg-[#fce4d4] hover:bg-[#ffc9a5] transition"
-                  onClick={() => handleCategoryClick("Kategori 3", info)}
-                >
-                  Kategori 3
-                </button>
-
-                <button
-                  className="text-black w-full py-2 rounded bg-[#c4e4b4] hover:bg-[#849474] transition"
-                  onClick={() => handleCategoryClick("Kategori 4", info)}
-                >
-                  Kategori 4
-                </button>
-
-                <button
-                  className="text-black w-full py-2 rounded bg-[#00b0f0] hover:bg-[#028dbf] transition"
-                  onClick={() => handleCategoryClick("Kategori 5", info)}
-                >
-                  Kategori 5
-                </button>
-
-                <button
-                  className="text-black w-full py-2 rounded bg-[#c55a11] hover:bg-[#9d470e] transition"
-                  onClick={() => handleCategoryClick("Kategori 6", info)}
-                >
-                  Kategori 6
-                </button>
-
-                <button
-                  className="text-black w-full py-2 rounded bg-[#deeaf6] hover:bg-[#b5d8fc] transition"
-                  onClick={() => handleCategoryClick("Kategori 7", info)}
-                >
-                  Kategori 7
-                </button>
+            {loading ? (
+              <p className="text-yellow-400">Loading data...</p>
+            ) : !info ? (
+              <p>Klik wilayah untuk melihat detail data</p>
+            ) : selected.value === "Batas Kecamatan.geojson" ? (
+              // === Masih level kabupaten ===
+              <div>
+                <strong>{info.properties?.WADMKC}</strong>
+                <pre className="mt-2 text-xs whitespace-pre-wrap break-all">
+                  {JSON.stringify(info.properties, null, 2)}
+                </pre>
               </div>
-            </div>
-          )}
+            ) : (
+              // === Level kecamatan / kelurahan ===
+              <div>
+                <strong>{info.properties?.NAMOBJ}</strong>
+                <div className="mt-4 grid grid-cols-1 gap-2">
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#ffc000] hover:bg-[#ffa600] transition"
+                    onClick={() => handleCategoryClick("Kategori 1", info)}
+                  >
+                    Kategori 1
+                  </button>
+
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#fff4cc] hover:bg-[#ffd27d] transition"
+                    onClick={() => handleCategoryClick("Kategori 2", info)}
+                  >
+                    Kategori 2
+                  </button>
+
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#fce4d4] hover:bg-[#ffc9a5] transition"
+                    onClick={() => handleCategoryClick("Kategori 3", info)}
+                  >
+                    Kategori 3
+                  </button>
+
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#c4e4b4] hover:bg-[#849474] transition"
+                    onClick={() => handleCategoryClick("Kategori 4", info)}
+                  >
+                    Kategori 4
+                  </button>
+
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#00b0f0] hover:bg-[#028dbf] transition"
+                    onClick={() => handleCategoryClick("Kategori 5", info)}
+                  >
+                    Kategori 5
+                  </button>
+
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#c55a11] hover:bg-[#9d470e] transition"
+                    onClick={() => handleCategoryClick("Kategori 6", info)}
+                  >
+                    Kategori 6
+                  </button>
+
+                  <button
+                    className="text-black w-full py-2 rounded bg-[#deeaf6] hover:bg-[#b5d8fc] transition"
+                    onClick={() => handleCategoryClick("Kategori 7", info)}
+                  >
+                    Kategori 7
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 text-gray-300 space-y-1">
+            <h3 className="font-bold text-lg">Sekretariat Tim Pencegahan dan Percepatan Penurunan Stunting</h3>
+            <p className="leading-relaxed">Dinas Pengendalian Penduduk, Keluarga Berencana,</p>
+            <p className="leading-relaxed">Pemberdayaan Perempuan dan Perlindungan Anak</p>
+            <p className="leading-relaxed">Jl. JCT. Simorangkir No. 4 Tarutung</p>
+            <p className="leading-relaxed">Kabupaten Tapanuli Utara</p>
+          </div>
         </aside>
       </div>
       {popup && (
