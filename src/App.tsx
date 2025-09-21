@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import MapView from "./components/MapView";
 import PopupTable from "./components/PopupTable";
+import PopupBalai from "./components/PopupBalai";
 import { fetchGoogleSheetData } from "./service/GoogleSheet";
+import PopupPuskesmas from "./components/PopupPuskesmas";
 
 type MapOption = {
   value: string; // file name in public/
@@ -52,7 +54,10 @@ export default function App() {
   const [selected, setSelected] = useState<MapOption>(mapOptions[0]);
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>("");
   const [info, setInfo] = useState<{ properties?: any; isKecamatan?: boolean } | null>(null);
+
   const [popup, setPopup] = useState<{ title: string; data: any } | null>(null);
+  const [popupBalai, setPopupBalai] = useState<boolean>(false);
+  const [popupPuskesmas, setPopupPuskesmas] = useState<boolean>(false);
 
   const [sheetData, setSheetData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -246,7 +251,7 @@ export default function App() {
 
       <div className="flex flex-1 gap-2 p-2">
         {/* Sidebar kiri */}
-        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg space-y-4">
+        <aside className="top-0 left-0 w-1/5 h-[calc(100vh-8rem)] overflow-y-auto bg-gray-800 p-4 rounded-lg space-y-4">
           {[
             { label: "Jumlah Penerima BNPT", value: "99.865", color: "from-[#0f2027] to-[#2c5364]" },
             { label: "Jumlah Penerima BST", value: "99.865", color: "from-[#09203f] to-[#537895]" },
@@ -264,6 +269,110 @@ export default function App() {
               <p className="text-sm text-white/90">{item.label}</p>
             </div>
           ))}
+
+          {/* Balai */}
+          <div className="flex flex-col gap-4 items-center justify-center p-6 
+            bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 
+            rounded-lg shadow-lg border border-gray-700">
+            <h2 className="text-xl font-bold text-white text-center">
+              Informasi Balai Penyuluhan Stunting
+            </h2>
+
+            {/* List Balai */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs">
+                <img
+                  src="/articles/balai/Balai KB Pahae Julu.jpg"
+                  alt="Balai KB Pahae Julu"
+                  className="w-full h-24 object-cover"
+                />
+                <div className="p-2 text-center text-gray-300 text-sm">
+                  Jl. Sipirok-Tarutung
+                </div>
+              </div>
+
+              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs">
+                <img
+                  src="/articles/balai/Balai KB Pangaribuan.jpg"
+                  alt="Balai KB Pangaribuan"
+                  className="w-full h-24 object-cover"
+                />
+                <div className="p-2 text-center text-gray-300 text-sm">
+                  Jl. Siliwangi Desa Pakpahan
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPopupBalai(true)}
+              className="mt-4 px-4 py-2 bg-blue-800 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition"
+            >
+              Baca Selengkapnya
+            </button>
+          </div>
+
+
+          {/* Puskesmas */}
+          <div className="flex flex-col gap-4 items-center justify-center p-6 
+            bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 
+            rounded-lg shadow-lg border border-gray-700">
+            <h2 className="text-xl font-bold text-white">
+              Informasi Puskesmas
+            </h2>
+
+            {/* List Puskesma */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs">
+                <img
+                  src="/articles/puskesmas/Puskesmas Garoga.jpg"
+                  alt="Puskesmas Garoga"
+                  className="w-full h-24 object-cover"
+                />
+                <div className="p-2 text-center text-gray-300 text-sm">
+                  Jln. Parluasan
+                </div>
+              </div>
+
+              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs">
+                <img
+                  src="/articles/puskesmas/Puskesmas Muara.jpg"
+                  alt="Puskesmas Muara"
+                  className="w-full h-24 object-cover"
+                />
+                <div className="p-2 text-center text-gray-300 text-sm">
+                  Jln. Tanah Lapang Desa Hutuanagodang
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPopupPuskesmas(true)}
+              className="mt-4 px-4 py-2 bg-blue-800 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition"
+            >
+              Baca Selengkapnya
+            </button>
+          </div>
+
+          {/* Aksi Konvergensi */}
+          <div className="flex flex-col gap-4 items-center justify-center p-6 
+            bg-gradient-to-br from-sky-950 via-sky-700 to-sky-950
+            rounded-lg shadow-lg border border-gray-700">
+            <h2 className="text-xl font-bold text-white text-center">
+              Aksi Konvergensi  Pencegahan  dan Percepatan Penurunan Stunting
+            </h2>
+
+            {/* List Puskesma */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-justify">
+              Aksi konvergensi pencegahan dan percepatan penurunan stunting Kabupaten Tapanuli Utara meliputi:.....
+            </div>
+
+            <button
+              onClick={() => setPopupPuskesmas(true)}
+              className="mt-4 px-4 py-2 bg-blue-800 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition"
+            >
+              Baca Selengkapnya
+            </button>
+          </div>
         </aside>
 
         {/* Main content */}
@@ -414,6 +523,18 @@ export default function App() {
           title={popup.title}
           data={popup.data}
           onClose={() => setPopup(null)}
+        />
+      )}
+
+      {popupBalai && (
+        <PopupBalai
+          onClose={() => setPopupBalai(false)}
+        />
+      )}
+
+      {popupPuskesmas && (
+        <PopupPuskesmas
+          onClose={() => setPopupPuskesmas(false)}
         />
       )}
     </div>
