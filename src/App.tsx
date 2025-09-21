@@ -367,7 +367,12 @@ export default function App() {
             </div>
 
             <button
-              onClick={() => setPopupPuskesmas(true)}
+              onClick={() =>
+                window.open(
+                  "https://docs.google.com/document/d/1WQ6g-LgzycKHi_RhWzkl5l0ouR-Vr84f/edit?usp=sharing&ouid=106512193936314426030&rtpof=true&sd=true",
+                  "_blank"
+                )
+              }
               className="mt-4 px-4 py-2 bg-blue-800 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition"
             >
               Baca Selengkapnya
