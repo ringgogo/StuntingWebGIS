@@ -196,25 +196,28 @@ export default function App() {
     let slice: [string, any][] = [];
 
     switch (category) {
-      case "Kategori 1": // C - AK
+      case "Fasilitas Pelayanan": // C - AK
         slice = entries.slice(2, 37); // kolom C (index 2) s.d. AK (index 36)
         break;
-      case "Kategori 2": // AL - BL
+      case "Sasaran Pelayanan Pencegahan dan Percepatan Penurunan Stunting": // AL - BL
         slice = entries.slice(37, 64);
         break;
-      case "Kategori 3": // BM - CQ
+      case "Pelayanan Masyarakat": // BM - CQ
         slice = entries.slice(64, 95);
         break;
-      case "Kategori 4": // CR - GY
+      case "Jumlah Pelayanan KB": // CR - GY
         slice = entries.slice(95, 204);
         break;
-      case "Kategori 5": // hanya GZ
+      case "Indikator Layanan": // hanya GZ
         slice = entries.slice(204, 205);
         break;
-      case "Kategori 6": // HA - HB
+      case "Dasa Wisma TP PKK": // HA - HB
         slice = entries.slice(205, 207);
         break;
-      case "Kategori 7": // HC - HI
+      case "Kasus Kekerasan": // HC - HI
+        slice = entries.slice(207, 214);
+        break;
+      case "Jumlah Penerima Bantuan": // HC - HI
         slice = entries.slice(207, 214);
         break;
     }
@@ -441,7 +444,7 @@ export default function App() {
         </main>
 
         {/* Sidebar kanan */}
-        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg overflow-y-auto flex flex-col">
+        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg h-[calc(100vh-8rem)] overflow-y-auto flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <h3 className="font-bold mb-2">Detail Data Terpilih</h3>
 
@@ -460,56 +463,67 @@ export default function App() {
             ) : (
               // === Level kecamatan / kelurahan ===
               <div>
-                <strong>{info.properties?.NAMOBJ}</strong>
-                <div className="mt-4 grid grid-cols-1 gap-2">
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#ffc000] hover:bg-[#ffa600] transition"
-                    onClick={() => handleCategoryClick("Kategori 1", info)}
-                  >
-                    Kategori 1
-                  </button>
+                <h2 className="text-lg font-bold text-center mb-3">
+                  {info.properties?.NAMOBJ}
+                </h2>
 
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#fff4cc] hover:bg-[#ffd27d] transition"
-                    onClick={() => handleCategoryClick("Kategori 2", info)}
-                  >
-                    Kategori 2
-                  </button>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Kolom kiri */}
+                  <div className="flex flex-col gap-2">
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      10.000 <span className="font-semibold">Penerima BNPT</span>
+                    </div>
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      10.000 <span className="font-semibold">Penerima BST</span>
+                    </div>
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      10.000 <span className="font-semibold">Penerima PKH</span>
+                    </div>
+                  </div>
 
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#fce4d4] hover:bg-[#ffc9a5] transition"
-                    onClick={() => handleCategoryClick("Kategori 3", info)}
-                  >
-                    Kategori 3
-                  </button>
+                  {/* Kolom kanan */}
+                  <div className="flex flex-col gap-2">
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      10.000 <span className="font-semibold">Penerima Sembako</span>
+                    </div>
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      10.000 <span className="font-semibold">Penerima Prakerja</span>
+                    </div>
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      10.000 <span className="font-semibold">Penerima KUR</span>
+                    </div>
+                  </div>
 
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#c4e4b4] hover:bg-[#849474] transition"
-                    onClick={() => handleCategoryClick("Kategori 4", info)}
-                  >
-                    Kategori 4
-                  </button>
+                  <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                    10.000 <span className="font-semibold">Penerima CBP</span>
+                  </div>
+                </div>
 
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#00b0f0] hover:bg-[#028dbf] transition"
-                    onClick={() => handleCategoryClick("Kategori 5", info)}
-                  >
-                    Kategori 5
-                  </button>
-
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#c55a11] hover:bg-[#9d470e] transition"
-                    onClick={() => handleCategoryClick("Kategori 6", info)}
-                  >
-                    Kategori 6
-                  </button>
-
-                  <button
-                    className="text-black w-full py-2 rounded bg-[#deeaf6] hover:bg-[#b5d8fc] transition"
-                    onClick={() => handleCategoryClick("Kategori 7", info)}
-                  >
-                    Kategori 7
-                  </button>
+                <div className="mt-6 grid grid-cols-1 gap-3">
+                  {[
+                    { label: "Fasilitas Pelayanan", gradient: "from-[#1e3c72] to-[#2a5298]" },
+                    { label: "Sasaran Pelayanan Pencegahan dan Percepatan Penurunan Stunting", gradient: "from-[#434343] to-[#000000]" },
+                    { label: "Pelayanan Masyarakat", gradient: "from-[#232526] to-[#414345]" }, 
+                    { label: "Jumlah Pelayanan KB", gradient: "from-[#283E51] to-[#485563]" }, 
+                    { label: "Indikator Layanan", gradient: "from-[#0f2027] to-[#203a43] to-[#2c5364]" },
+                    { label: "Dasa Wisma TP PKK", gradient: "from-[#141E30] to-[#243B55]" }, 
+                    { label: "Kasus Kekerasan", gradient: "from-[#2c3e50] to-[#4ca1af]" }, 
+                    { label: "Jumlah Penerima Bantuan", gradient: "from-[#283048] to-[#859398]" },
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleCategoryClick(item.label, info)}
+                      className={`
+                        bg-gradient-to-r ${item.gradient} 
+                        text-white w-full py-3 px-4 rounded-xl 
+                        shadow-md font-medium text-sm tracking-wide
+                        transition transform hover:scale-[1.03] active:scale-[0.97]
+                        hover:shadow-lg
+                      `}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
