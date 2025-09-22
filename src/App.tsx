@@ -7,10 +7,20 @@ import { fetchGoogleSheetData } from "./service/GoogleSheet";
 import PopupPuskesmas from "./components/PopupPuskesmas";
 
 type MapOption = {
-  value: string; // file name in public/
+  value: string;
   labelField: string;
   label: string;
 };
+
+type TotalData = {
+  bst: string;
+  bnpt: string;
+  pkh: string;
+  sembako: string;
+  prakerja: string;
+  kur: string;
+  cbp: string;
+}
 
 const mapOptions: MapOption[] = [
   { value: "Batas Kecamatan.geojson", labelField: "WADMKC", label: "Batas Kecamatan" },
@@ -26,7 +36,7 @@ const mapOptions: MapOption[] = [
   { value: "KEL SIBORONG BORONG.geojson", labelField: "NAMOBJ", label: "Kecamatan Siborong-Borong" },
   { value: "KEL SIMANGUMBAN.geojson", labelField: "NAMOBJ", label: "Kecamatan Simangumban" },
   { value: "KEL SIPAHUTAR.geojson", labelField: "NAMOBJ", label: "Kecamatan Sipahutar" },
-  { value: "KEL SIPOHOLON NEW NEW.geojson", labelField: "NAMOBJ", label: "Kecamatan Sipoholon" },
+  { value: "KEL SIPOHOLON.geojson", labelField: "NAMOBJ", label: "Kecamatan Sipoholon" },
   { value: "KEL TARUTUNG.geojson", labelField: "NAMOBJ", label: "Kecamatan Tarutung" },
   { value: "KEL ADIANKONTING.geojson", labelField: "NAMOBJ", label: "Kecamatan Adiankonting" },
 ];
@@ -62,6 +72,8 @@ export default function App() {
   const [sheetData, setSheetData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [areas, setAreas] = useState<Record<string, string[]>>({});
+
+  const [totalData, setTotalData] = useState<TotalData | null>(null);
 
   useEffect(() => {
     const loadAreas = async () => {
@@ -121,6 +133,11 @@ export default function App() {
         try {
           const data = await fetchGoogleSheetData(kecamatanName);
           setSheetData(data);
+
+          if (data.length > 0) {
+            const desaData = data[0]; 
+            setTotalData(extractTotalData(desaData));
+          }
         } catch (err) {
           console.error(err);
           setSheetData([]);
@@ -196,41 +213,66 @@ export default function App() {
     let slice: [string, any][] = [];
 
     switch (category) {
-      case "Fasilitas Pelayanan": // C - AK
-        slice = entries.slice(2, 37); // kolom C (index 2) s.d. AK (index 36)
+      case "Fasilitas Pelayanan": 
+        slice = entries.slice(2, 28); 
         break;
-      case "Sasaran Pelayanan Pencegahan dan Percepatan Penurunan Stunting": // AL - BL
-        slice = entries.slice(37, 64);
+      case "Sasaran Pelayanan Pencegahan dan Percepatan Penurunan Stunting":
+        slice = entries.slice(28, 47);
         break;
-      case "Pelayanan Masyarakat": // BM - CQ
-        slice = entries.slice(64, 95);
+      case "Pelayanan Masyarakat":
+        slice = entries.slice(47, 96);
         break;
-      case "Jumlah Pelayanan KB": // CR - GY
-        slice = entries.slice(95, 204);
+      case "Jumlah Pelayanan KB":
+        slice = entries.slice(96, 137);
         break;
-      case "Indikator Layanan": // hanya GZ
-        slice = entries.slice(204, 205);
+      case "Indikator Layanan":
+        slice = entries.slice(137, 161);
         break;
-      case "Dasa Wisma TP PKK": // HA - HB
-        slice = entries.slice(205, 207);
+      case "Dasa Wisma TP PKK":
+        slice = entries.slice(161, 267);
         break;
-      case "Kasus Kekerasan": // HC - HI
-        slice = entries.slice(207, 214);
+      case "Kasus Kekerasan":
+        slice = entries.slice(267, 269);
         break;
-      case "Jumlah Penerima Bantuan": // HC - HI
-        slice = entries.slice(207, 214);
+      case "Jumlah Penerima Bantuan":
+        slice = entries.slice(269, 276);
         break;
     }
 
-    // jadikan object kembali
     const kategoriData = Object.fromEntries(slice);
-
 
     setPopup({
       title: `Data kategori ${category} untuk ${kelurahan} (${kecamatanName})`,
       data: kategoriData,
     });
   };
+
+  function extractTotalData(desaData: any): TotalData {
+    if (!desaData) {
+      return {
+        bst: "",
+        bnpt: "",
+        pkh: "",
+        sembako: "",
+        prakerja: "",
+        kur: "",
+        cbp: "",
+      };
+    }
+
+    const entries = Object.entries(desaData);
+    const slice = entries.slice(269, 276);
+
+    return {
+      bst: String(slice[0]?.[1] ?? ""),
+      bnpt: String(slice[1]?.[1] ?? ""),
+      pkh: String(slice[2]?.[1] ?? ""),
+      sembako: String(slice[3]?.[1] ?? ""),
+      prakerja: String(slice[4]?.[1] ?? ""),
+      kur: String(slice[5]?.[1] ?? ""),
+      cbp: String(slice[6]?.[1] ?? ""),
+    };
+  }
 
   return (
     <div className="w-screen min-h-screen bg-gray-900 text-white flex flex-col">
@@ -471,31 +513,30 @@ export default function App() {
                   {/* Kolom kiri */}
                   <div className="flex flex-col gap-2">
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      10.000 <span className="font-semibold">Penerima BNPT</span>
+                      {totalData?.bnpt} <span className="font-semibold">Penerima BNPT</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      10.000 <span className="font-semibold">Penerima BST</span>
+                      {totalData?.bst} <span className="font-semibold">Penerima BST</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      10.000 <span className="font-semibold">Penerima PKH</span>
+                      {totalData?.pkh} <span className="font-semibold">Penerima PKH</span>
+                    </div>
+                    <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
+                      {totalData?.cbp} <span className="font-semibold">Penerima CBP</span>
                     </div>
                   </div>
 
                   {/* Kolom kanan */}
                   <div className="flex flex-col gap-2">
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      10.000 <span className="font-semibold">Penerima Sembako</span>
+                      {totalData?.sembako} <span className="font-semibold">Penerima Sembako</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      10.000 <span className="font-semibold">Penerima Prakerja</span>
+                      {totalData?.prakerja} <span className="font-semibold">Penerima Prakerja</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      10.000 <span className="font-semibold">Penerima KUR</span>
+                      {totalData?.kur} <span className="font-semibold">Penerima KUR</span>
                     </div>
-                  </div>
-
-                  <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                    10.000 <span className="font-semibold">Penerima CBP</span>
                   </div>
                 </div>
 
