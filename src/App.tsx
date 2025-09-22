@@ -570,11 +570,11 @@ export default function App() {
             )}
           </div>
           <div className="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 text-gray-300 space-y-1">
-            <h3 className="font-bold text-lg">Sekretariat Tim Pencegahan dan Percepatan Penurunan Stunting</h3>
-            <p className="leading-relaxed">Dinas Pengendalian Penduduk, Keluarga Berencana,</p>
-            <p className="leading-relaxed">Pemberdayaan Perempuan dan Perlindungan Anak</p>
-            <p className="leading-relaxed">Jl. JCT. Simorangkir No. 4 Tarutung</p>
-            <p className="leading-relaxed">Kabupaten Tapanuli Utara</p>
+            <h3 className="font-bold text-xs">Sekretariat Tim Pencegahan dan Percepatan Penurunan Stunting</h3>
+            <p className="leading-relaxed text-[9px]">Dinas Pengendalian Penduduk, Keluarga Berencana,</p>
+            <p className="leading-relaxed text-[9px]">Pemberdayaan Perempuan dan Perlindungan Anak</p>
+            <p className="leading-relaxed text-[9px]">Jl. JCT. Simorangkir No. 4 Tarutung</p>
+            <p className="leading-relaxed text-[9px]">Kabupaten Tapanuli Utara</p>
           </div>
         </aside>
       </div>
