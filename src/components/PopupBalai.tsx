@@ -71,17 +71,17 @@ const balaiData = [
 export default function PopupBalai({ onClose }: PopupBalaiProps) {
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-gray-600 text-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] p-6 relative flex flex-col"
+        className="bg-gray-600 text-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] p-6 relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Tombol close */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 bg-gray-700 hover:bg-gray-600 text-white rounded-full p-2 shadow transition"
+          className="absolute top-3 right-3 bg-red-700 hover:bg-red-600 text-white rounded-full p-2 shadow transition"
         >
           ✕
         </button>
