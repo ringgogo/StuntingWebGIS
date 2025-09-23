@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import MapView from "./components/MapView";
@@ -38,7 +39,7 @@ const mapOptions: MapOption[] = [
   { value: "KEL SIPAHUTAR.geojson", labelField: "NAMOBJ", label: "Kecamatan Sipahutar" },
   { value: "KEL SIPOHOLON.geojson", labelField: "NAMOBJ", label: "Kecamatan Sipoholon" },
   { value: "KEL TARUTUNG.geojson", labelField: "NAMOBJ", label: "Kecamatan Tarutung" },
-  { value: "KEL ADIANKONTING.geojson", labelField: "NAMOBJ", label: "Kecamatan Adiankonting" },
+  { value: "KEL ADIANKOTING.geojson", labelField: "NAMOBJ", label: "Kecamatan Adiankoting" },
 ];
 
 // mapping manual kalau nama di geojson beda dengan label
@@ -57,7 +58,7 @@ const kecamatanMapping: Record<string, string> = {
   "SIPAHUTAR": "Kecamatan Sipahutar",
   "SIPOHOLON": "Kecamatan Sipoholon",
   "TARUTUNG": "Kecamatan Tarutung",
-  "ADIANKONTING": "Kecamatan Adiankonting",
+  "ADIANKOTING": "Kecamatan Adiankoting",
 };
 
 export default function App() {
@@ -74,6 +75,7 @@ export default function App() {
   const [areas, setAreas] = useState<Record<string, string[]>>({});
 
   const [totalData, setTotalData] = useState<TotalData | null>(null);
+  const [grandTotal, setGrandTotal] = useState<TotalData | null>(null);
 
   useEffect(() => {
     const loadAreas = async () => {
@@ -174,15 +176,27 @@ export default function App() {
     setInfo(fakeDetail);
 
     const kecamatanName: string = selected.label.replace("Kecamatan ", "");
+    const kelurahanName = selectedKelurahan.toUpperCase();
 
     setLoading(true);
     fetchGoogleSheetData(kecamatanName)
       .then((data) => {
         setSheetData(data);
+
+        const desaData = data.find(
+          (row: any) => row.Nama_Desa?.toUpperCase() === kelurahanName
+        );
+
+        // if (desaData) {
+        //   setTotalData(extractTotalData(desaData));
+        // } else {
+        //   setTotalData(null);
+        // }
       })
       .catch((err) => {
         console.error(err);
         setSheetData([]);
+        setTotalData(null);
       })
       .finally(() => setLoading(false));
   }, [selectedKelurahan, selected]);
@@ -247,6 +261,26 @@ export default function App() {
     });
   };
 
+  const toNumber = (val: any) => {
+    if (val === "" || val === null || val === undefined) return 0;
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+  };
+
+  function sumTotalData(allData: any[]): Record<string, number> {
+    return allData.reduce((acc, desa) => {
+      const t = extractTotalData(desa);
+      acc.bst += toNumber(t.bst);
+      acc.bnpt += toNumber(t.bnpt);
+      acc.pkh += toNumber(t.pkh);
+      acc.sembako += toNumber(t.sembako);
+      acc.prakerja += toNumber(t.prakerja);
+      acc.kur += toNumber(t.kur);
+      acc.cbp += toNumber(t.cbp);
+      return acc;
+    }, { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0 });
+  }
+
   function extractTotalData(desaData: any): TotalData {
     if (!desaData) {
       return {
@@ -274,6 +308,64 @@ export default function App() {
     };
   }
 
+  useEffect(() => {
+    const loadTotalAllKecamatan = async () => {
+      setLoading(true);
+      try {
+        // filter mapOptions, ambil semua kecamatan
+        const kecamatanOptions = mapOptions.filter(
+          (o) => o.value !== "Batas Kecamatan.geojson"
+        );
+
+        const allTotals: Record<string, number>[] = [];
+
+        // loop fetch per kecamatan
+        for (const kec of kecamatanOptions) {
+          const kecName = kec.label.replace("Kecamatan ", "");
+          const data = await fetchGoogleSheetData(kecName);
+          const totalSum = sumTotalData(data);
+          allTotals.push(totalSum);
+        }
+
+        // sum semua kecamatan
+        const grandTotal = allTotals.reduce(
+          (acc, t) => {
+            acc.bst += t.bst;
+            acc.bnpt += t.bnpt;
+            acc.pkh += t.pkh;
+            acc.sembako += t.sembako;
+            acc.prakerja += t.prakerja;
+            acc.kur += t.kur;
+            acc.cbp += t.cbp;
+            return acc;
+          },
+          { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0 }
+        );
+
+        console.log("Grand total semua kecamatan:", grandTotal);
+        const grandTotalData: TotalData = {
+          bst: String(grandTotal.bst),
+          bnpt: String(grandTotal.bnpt),
+          pkh: String(grandTotal.pkh),
+          sembako: String(grandTotal.sembako),
+          prakerja: String(grandTotal.prakerja),
+          kur: String(grandTotal.kur),
+          cbp: String(grandTotal.cbp),
+        };
+
+        setGrandTotal(grandTotalData);
+
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTotalAllKecamatan();
+  }, []);
+
+
   return (
     <div className="w-screen min-h-screen bg-gray-900 text-white flex flex-col">
       <header className="bg-gradient-to-r from-gray-700 via-gray-800 to-gray-800 p-4 flex items-center">
@@ -298,13 +390,13 @@ export default function App() {
         {/* Sidebar kiri */}
         <aside className="top-0 left-0 w-1/5 h-[calc(100vh-8rem)] overflow-y-auto bg-gray-800 p-4 rounded-lg space-y-4">
           {[
-            { label: "Jumlah Penerima BNPT", value: "99.865", color: "from-[#0f2027] to-[#2c5364]" },
-            { label: "Jumlah Penerima BST", value: "99.865", color: "from-[#09203f] to-[#537895]" },
-            { label: "Jumlah Penerima PKH", value: "33.047", color: "from-[#1e3c72] to-[#2a5298]" },
-            { label: "Jumlah Penerima Sembako", value: "99.965", color: "from-[#141e30] to-[#243b55]" },
-            { label: "Jumlah Penerima Prakerja", value: "99.965", color: "from-[#2c3e50] to-[#3498db]" },
-            { label: "Jumlah Penerima KUR", value: "99.965", color: "from-[#000428] to-[#004e92]" },
-            { label: "Jumlah Penerima CBP", value: "99.965", color: "from-[#283e51] to-[#485563]" },
+            { label: "Jumlah Penerima BNPT", value: grandTotal?.bnpt, color: "from-[#0f2027] to-[#2c5364]" },
+            { label: "Jumlah Penerima BST", value: grandTotal?.bst, color: "from-[#09203f] to-[#537895]" },
+            { label: "Jumlah Penerima PKH", value: grandTotal?.pkh, color: "from-[#1e3c72] to-[#2a5298]" },
+            { label: "Jumlah Penerima Sembako", value: grandTotal?.sembako, color: "from-[#141e30] to-[#243b55]" },
+            { label: "Jumlah Penerima Prakerja", value: grandTotal?.prakerja, color: "from-[#2c3e50] to-[#3498db]" },
+            { label: "Jumlah Penerima KUR", value: grandTotal?.kur, color: "from-[#000428] to-[#004e92]" },
+            { label: "Jumlah Penerima CBP", value: grandTotal?.cbp, color: "from-[#283e51] to-[#485563]" },
           ].map((item) => (
             <div
               key={item.label}
@@ -462,13 +554,13 @@ export default function App() {
               {/* Dropdown Kelurahan */}
               {selected.value !== "Batas Kecamatan.geojson" && (
                 <div className="flex flex-col gap-1">
-                  <label className="text-gray-300 font-medium">Pilih Kelurahan</label>
+                  <label className="text-gray-300 font-medium">Pilih Desa / Kelurahan</label>
                   <select
                     onChange={(e) => setSelectedKelurahan(e.target.value)}
                     value={selectedKelurahan}
                     className="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   >
-                    <option value="">-- Pilih Kelurahan --</option>
+                    <option value="">-- Pilih Desa / Kelurahan --</option>
                     {(areas[selected.label.replace("Kecamatan ", "")] || []).map((kel) => (
                       <option key={kel} value={kel}>
                         Kelurahan {capitalizeWords(kel)}
