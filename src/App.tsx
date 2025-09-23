@@ -21,6 +21,10 @@ type TotalData = {
   prakerja: string;
   kur: string;
   cbp: string;
+  data_stunting: string;
+  beresiko_stunting: string;
+  wasting: string;
+  under_weight: string;
 }
 
 const mapOptions: MapOption[] = [
@@ -90,20 +94,6 @@ export default function App() {
     loadAreas();
   }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        await fetchGoogleSheetData("Sipoholon");
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
   // event handler klik peta
   useEffect(() => {
     const handler = async (e: any) => {
@@ -124,7 +114,7 @@ export default function App() {
 
           if (target) {
             setSelected(target);
-            setInfo(null); // reset detail biar pas klik ulang muncul data kecamatan
+            setInfo(null);
           }
         }
       }
@@ -137,7 +127,9 @@ export default function App() {
           setSheetData(data);
 
           if (data.length > 0) {
-            const desaData = data[0]; 
+            const desaData = data.find(
+              (row: any) => row.Nama_Desa?.toUpperCase() === selectedKelurahan
+            );
             setTotalData(extractTotalData(desaData));
           }
         } catch (err) {
@@ -187,11 +179,11 @@ export default function App() {
           (row: any) => row.Nama_Desa?.toUpperCase() === kelurahanName
         );
 
-        // if (desaData) {
-        //   setTotalData(extractTotalData(desaData));
-        // } else {
-        //   setTotalData(null);
-        // }
+        if (desaData) {
+          setTotalData(extractTotalData(desaData));
+        } else {
+          setTotalData(null);
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -277,8 +269,12 @@ export default function App() {
       acc.prakerja += toNumber(t.prakerja);
       acc.kur += toNumber(t.kur);
       acc.cbp += toNumber(t.cbp);
+      acc.data_stunting += toNumber(t.data_stunting);
+      acc.beresiko_stunting += toNumber(t.beresiko_stunting);
+      acc.wasting += toNumber(t.wasting);
+      acc.under_weight += toNumber(t.under_weight);
       return acc;
-    }, { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0 });
+    }, { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0, data_stunting: 0, beresiko_stunting: 0, wasting: 0, under_weight: 0});
   }
 
   function extractTotalData(desaData: any): TotalData {
@@ -291,11 +287,16 @@ export default function App() {
         prakerja: "",
         kur: "",
         cbp: "",
+        data_stunting: "",
+        beresiko_stunting: "",
+        wasting: "",
+        under_weight: "",
       };
     }
 
     const entries = Object.entries(desaData);
     const slice = entries.slice(269, 276);
+
 
     return {
       bst: String(slice[0]?.[1] ?? ""),
@@ -305,6 +306,10 @@ export default function App() {
       prakerja: String(slice[4]?.[1] ?? ""),
       kur: String(slice[5]?.[1] ?? ""),
       cbp: String(slice[6]?.[1] ?? ""),
+      data_stunting: String(entries[44]?.[1] ?? ""),
+      beresiko_stunting: String(entries[137]?.[1] ?? ""),
+      wasting: String(entries[46]?.[1] ?? ""),
+      under_weight: String(entries[45]?.[1] ?? ""),
     };
   }
 
@@ -312,7 +317,6 @@ export default function App() {
     const loadTotalAllKecamatan = async () => {
       setLoading(true);
       try {
-        // filter mapOptions, ambil semua kecamatan
         const kecamatanOptions = mapOptions.filter(
           (o) => o.value !== "Batas Kecamatan.geojson"
         );
@@ -324,6 +328,7 @@ export default function App() {
           const kecName = kec.label.replace("Kecamatan ", "");
           const data = await fetchGoogleSheetData(kecName);
           const totalSum = sumTotalData(data);
+          console.log(totalSum)
           allTotals.push(totalSum);
         }
 
@@ -337,9 +342,13 @@ export default function App() {
             acc.prakerja += t.prakerja;
             acc.kur += t.kur;
             acc.cbp += t.cbp;
+            acc.data_stunting += t.data_stunting;
+            acc.beresiko_stunting += t.beresiko_stunting;
+            acc.under_weight += t.under_weight;
+            acc.wasting += t.wasting;
             return acc;
           },
-          { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0 }
+          { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0, data_stunting: 0, beresiko_stunting: 0, wasting: 0, under_weight: 0 }
         );
 
         console.log("Grand total semua kecamatan:", grandTotal);
@@ -351,6 +360,10 @@ export default function App() {
           prakerja: String(grandTotal.prakerja),
           kur: String(grandTotal.kur),
           cbp: String(grandTotal.cbp),
+          data_stunting: String(grandTotal.data_stunting),
+          beresiko_stunting: String(grandTotal.beresiko_stunting),
+          wasting: String(grandTotal.wasting),
+          under_weight: String(grandTotal.under_weight),
         };
 
         setGrandTotal(grandTotalData);
@@ -390,13 +403,13 @@ export default function App() {
         {/* Sidebar kiri */}
         <aside className="top-0 left-0 w-1/5 h-[calc(100vh-8rem)] overflow-y-auto bg-gray-800 p-4 rounded-lg space-y-4">
           {[
-            { label: "Jumlah Penerima BNPT", value: grandTotal?.bnpt, color: "from-[#0f2027] to-[#2c5364]" },
-            { label: "Jumlah Penerima BST", value: grandTotal?.bst, color: "from-[#09203f] to-[#537895]" },
-            { label: "Jumlah Penerima PKH", value: grandTotal?.pkh, color: "from-[#1e3c72] to-[#2a5298]" },
-            { label: "Jumlah Penerima Sembako", value: grandTotal?.sembako, color: "from-[#141e30] to-[#243b55]" },
-            { label: "Jumlah Penerima Prakerja", value: grandTotal?.prakerja, color: "from-[#2c3e50] to-[#3498db]" },
-            { label: "Jumlah Penerima KUR", value: grandTotal?.kur, color: "from-[#000428] to-[#004e92]" },
-            { label: "Jumlah Penerima CBP", value: grandTotal?.cbp, color: "from-[#283e51] to-[#485563]" },
+            { label: "Jumlah Penerima BNPT", value: grandTotal?.bnpt || 'xxxx', color: "from-[#0f2027] to-[#2c5364]" },
+            { label: "Jumlah Penerima BST", value: grandTotal?.bst || 'xxxx', color: "from-[#09203f] to-[#537895]" },
+            { label: "Jumlah Penerima PKH", value: grandTotal?.pkh || 'xxxx', color: "from-[#1e3c72] to-[#2a5298]" },
+            { label: "Jumlah Penerima Sembako", value: grandTotal?.sembako || 'xxxx', color: "from-[#141e30] to-[#243b55]" },
+            { label: "Jumlah Penerima Prakerja", value: grandTotal?.prakerja || 'xxxx', color: "from-[#2c3e50] to-[#3498db]" },
+            { label: "Jumlah Penerima KUR", value: grandTotal?.kur || 'xxxx', color: "from-[#000428] to-[#004e92]" },
+            { label: "Jumlah Penerima CBP", value: grandTotal?.cbp || 'xxxx', color: "from-[#283e51] to-[#485563]" },
           ].map((item) => (
             <div
               key={item.label}
@@ -520,13 +533,23 @@ export default function App() {
         {/* Main content */}
         <main className="flex-1 flex flex-col">
           <div className="flex justify-between bg-gray-800 p-3 rounded-lg mb-2 gap-3">
-            <div className="flex-1 mx-1 p-6 rounded-lg bg-gray-700 shadow-md border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
-              <h2 className="text-2xl font-bold text-white">23.579</h2>
-              <p className="text-gray-300 mt-1">Jumlah Data Stunting</p>
-            </div>
-            <div className="flex-1 mx-1 p-6 rounded-lg bg-gray-700 shadow-md border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
-              <h2 className="text-2xl font-bold text-white">13.051</h2>
-              <p className="text-gray-300 mt-1">Keluarga Berisiko Stunting</p>
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <div className="py-2 px-1 rounded-xl bg-gray-700 shadow-2xl border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
+                <h2 className="text-lg font-bold text-white">{grandTotal?.data_stunting || "XXXX"}</h2>
+                <p className="text-gray-300 mt-1">Jumlah Data Stunting</p>
+              </div>
+              <div className="py-2 px-1 rounded-xl bg-gray-700 shadow-2xl border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
+                <h2 className="text-lg font-bold text-white">{grandTotal?.beresiko_stunting || "XXXX"}</h2>
+                <p className="text-gray-300 mt-1">Keluarga Berisiko Stunting</p>
+              </div>
+              <div className="py-2 px-1 rounded-xl bg-gray-700 shadow-2xl border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
+                <h2 className="text-lg font-bold text-white">{grandTotal?.under_weight || "XXXX"}</h2>
+                <p className="text-gray-300 mt-1">Jumlah Anak Yang Mengalami Under Weight</p>
+              </div>
+              <div className="py-2 px-1 rounded-xl bg-gray-700 shadow-2xl border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
+                <h2 className="text-lg font-bold text-white">{grandTotal?.wasting || "XXXX"}</h2>
+                <p className="text-gray-300 mt-1">Jumlah Anak Yang Mengalami Wasting</p>
+              </div>
             </div>
             <div className="flex-1 flex flex-col mx-1 gap-4">
               {/* Dropdown Kecamatan */}
@@ -601,33 +624,67 @@ export default function App() {
                   {info.properties?.NAMOBJ}
                 </h2>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Data Stunting */}
+                  <div className="p-4 rounded-lg bg-gray-900 shadow-md border border-gray-700 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform">
+                    <h2 className="text-base font-bold text-white">
+                      {totalData?.data_stunting || "xxxx"}
+                    </h2>
+                    <p className="text-gray-400 text-xs mt-1">Jumlah Data Stunting</p>
+                  </div>
+
+                  {/* Keluarga Berisiko */}
+                  <div className="p-4 rounded-lg bg-gray-900 shadow-md border border-gray-700 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform">
+                    <h2 className="text-base font-bold text-white">
+                      {totalData?.beresiko_stunting || "xxxx"}
+                    </h2>
+                    <p className="text-gray-400 text-xs mt-1">Keluarga Berisiko Stunting</p>
+                  </div>
+
+                  {/* Wasting */}
+                  <div className="p-4 rounded-lg bg-gray-900 shadow-md border border-gray-700 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform">
+                    <h2 className="text-base font-bold text-white">
+                      {totalData?.wasting || "xxxx"}
+                    </h2>
+                    <p className="text-gray-400 text-xs mt-1">Jumlah Anak Mengalami Wasting</p>
+                  </div>
+
+                  {/* Under Weight */}
+                  <div className="p-4 rounded-lg bg-gray-900 shadow-md border border-gray-700 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform">
+                    <h2 className="text-base font-bold text-white">
+                      {totalData?.under_weight || "xxxx"}
+                    </h2>
+                    <p className="text-gray-400 text-xs mt-1">Jumlah Anak Mengalami Under Weight</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-3">
                   {/* Kolom kiri */}
                   <div className="flex flex-col gap-2">
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.bnpt} <span className="font-semibold">Penerima BNPT</span>
+                      {totalData?.bnpt || 'xxxx'} <span className="font-semibold">Penerima BNPT</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.bst} <span className="font-semibold">Penerima BST</span>
+                      {totalData?.bst || 'xxxx'} <span className="font-semibold">Penerima BST</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.pkh} <span className="font-semibold">Penerima PKH</span>
+                      {totalData?.pkh || 'xxxx'} <span className="font-semibold">Penerima PKH</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.cbp} <span className="font-semibold">Penerima CBP</span>
+                      {totalData?.cbp || 'xxxx'} <span className="font-semibold">Penerima CBP</span>
                     </div>
                   </div>
 
                   {/* Kolom kanan */}
                   <div className="flex flex-col gap-2">
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.sembako} <span className="font-semibold">Penerima Sembako</span>
+                      {totalData?.sembako || 'xxxx'} <span className="font-semibold">Penerima Sembako</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.prakerja} <span className="font-semibold">Penerima Prakerja</span>
+                      {totalData?.prakerja || 'xxxx'} <span className="font-semibold">Penerima Prakerja</span>
                     </div>
                     <div className="bg-blue-50 text-blue-900 rounded-lg px-4 py-2 text-sm shadow-sm">
-                      {totalData?.kur} <span className="font-semibold">Penerima KUR</span>
+                      {totalData?.kur || 'xxxx'} <span className="font-semibold">Penerima KUR</span>
                     </div>
                   </div>
                 </div>
