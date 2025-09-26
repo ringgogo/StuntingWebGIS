@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import MapView from "./components/MapView";
@@ -6,6 +5,7 @@ import PopupTable from "./components/PopupTable";
 import PopupBalai from "./components/PopupBalai";
 import { fetchGoogleSheetData } from "./service/GoogleSheet";
 import PopupPuskesmas from "./components/PopupPuskesmas";
+import { BookOpen } from "lucide-react";
 
 type MapOption = {
   value: string;
@@ -120,6 +120,11 @@ export default function App() {
       }
 
       if (!detail?.isKecamatan && selected.value !== "Batas Kecamatan.geojson") {
+        const namaDesa: string = detail.properties?.NAMOBJ || "";
+        if (namaDesa) {
+          setSelectedKelurahan(namaDesa.toUpperCase());
+        }
+
         const kecamatanName: string = selected.label.replace("Kecamatan ", "");
         setLoading(true);
         try {
@@ -128,10 +133,11 @@ export default function App() {
 
           if (data.length > 0) {
             const desaData = data.find(
-              (row: any) => row.Nama_Desa?.toUpperCase() === selectedKelurahan
+              (row: any) => row.Nama_Desa?.toUpperCase() === namaDesa
             );
             setTotalData(extractTotalData(desaData));
           }
+          console.log(totalData)
         } catch (err) {
           console.error(err);
           setSheetData([]);
@@ -169,6 +175,10 @@ export default function App() {
 
     const kecamatanName: string = selected.label.replace("Kecamatan ", "");
     const kelurahanName = selectedKelurahan.toUpperCase();
+
+    if (kelurahanName) {
+      setSelectedKelurahan(kelurahanName);
+    }
 
     setLoading(true);
     fetchGoogleSheetData(kecamatanName)
@@ -328,7 +338,6 @@ export default function App() {
           const kecName = kec.label.replace("Kecamatan ", "");
           const data = await fetchGoogleSheetData(kecName);
           const totalSum = sumTotalData(data);
-          console.log(totalSum)
           allTotals.push(totalSum);
         }
 
@@ -351,7 +360,6 @@ export default function App() {
           { bst: 0, bnpt: 0, pkh: 0, sembako: 0, prakerja: 0, kur: 0, cbp: 0, data_stunting: 0, beresiko_stunting: 0, wasting: 0, under_weight: 0 }
         );
 
-        console.log("Grand total semua kecamatan:", grandTotal);
         const grandTotalData: TotalData = {
           bst: String(grandTotal.bst),
           bnpt: String(grandTotal.bnpt),
@@ -382,19 +390,30 @@ export default function App() {
   return (
     <div className="w-screen min-h-screen bg-gray-900 text-white flex flex-col">
       <header className="bg-gradient-to-r from-gray-700 via-gray-800 to-gray-800 p-4 flex items-center">
-        <div className="flex items-center space-x-3">
-          <img
-            src="/logo_taput.png"
-            alt="Logo"
-            className="h-14 w-14 object-contain drop-shadow-lg"
-          />
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center space-x-3">
+            <img
+              src="/logo_taput.png"
+              alt="Logo"
+              className="h-14 w-14 object-contain drop-shadow-lg"
+            />
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-wide text-white">
+                HUTA SEHAT
+              </h1>
+              <p className="text-sm text-gray-300">
+                Hidup Unggul Tapanuli, Sistem Elektronik Hapus Stunting
+              </p>
+            </div>
+          </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-wide text-white">
-              HUTA SEHAT
-            </h1>
-            <p className="text-sm text-gray-300">
-              Hidup Unggul Tapanuli, Sistem Elektronik Hapus Stunting
-            </p>
+            <a
+              href="/https://drive.google.com/file/d/1vAE72bD-Mgt91CTidN6L_7SM-jSwqurK/view"
+              className="text-gray-300 hover:text-white transition-colors"
+              title="Buku Stunting"
+            >
+              <BookOpen className="w-7 h-7" />
+            </a>
           </div>
         </div>
       </header>
