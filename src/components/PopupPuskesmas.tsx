@@ -103,7 +103,7 @@ export default function PopupPuskesmas({ onClose }: PopupPuskesmasProps) {
       onClick={onClose}
     >
       <div
-        className="bg-gray-600 text-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] p-6 relative flex flex-col"
+        className="bg-gray-600 text-white rounded-2xl shadow-2xl max-w-6xl w-4/5 lg:w-full max-h-[90vh] p-6 relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Tombol close */}
@@ -115,12 +115,12 @@ export default function PopupPuskesmas({ onClose }: PopupPuskesmasProps) {
         </button>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold mb-4 text-center">
+        <h2 className="text-xl font-bold mb-4 text-left">
           Daftar Puskesmas
         </h2>
 
         {/* Grid foto dengan scroll */}
-        <div className="grid grid-cols-3 gap-4 max-h-[80vh] overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-h-[80vh] overflow-y-auto">
           {puskesmasData.map((puskesmas, index) => (
             <div
               key={index}

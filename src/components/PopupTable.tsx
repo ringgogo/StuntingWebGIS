@@ -12,7 +12,7 @@ export default function PopupTable({ title, data, onClose }: PopupTableProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white text-black rounded-lg shadow-lg max-w-2xl w-full p-4 relative overflow-hidden"
+        className="bg-white text-black rounded-lg shadow-lg max-w-2xl w-4/5 lg:w-full p-4 relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button

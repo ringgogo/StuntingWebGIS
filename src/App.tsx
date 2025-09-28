@@ -398,10 +398,10 @@ export default function App() {
               className="h-14 w-14 object-contain drop-shadow-lg"
             />
             <div>
-              <h1 className="text-2xl font-extrabold tracking-wide text-white">
+              <div className="text-md lg:text-2xl font-extrabold tracking-wide text-white">
                 HUTA SEHAT
-              </h1>
-              <p className="text-sm text-gray-300">
+              </div>
+              <p className="text-xs lg:text-sm text-gray-300">
                 Hidup Unggul Tapanuli, Sistem Elektronik Hapus Stunting
               </p>
             </div>
@@ -418,26 +418,28 @@ export default function App() {
         </div>
       </header>
 
-      <div className="flex flex-1 gap-2 p-2">
+      <div className="flex flex-col lg:flex-row flex-1 gap-2 p-2">
         {/* Sidebar kiri */}
-        <aside className="top-0 left-0 w-1/5 h-[calc(100vh-8rem)] overflow-y-auto bg-gray-800 p-4 rounded-lg space-y-4">
-          {[
-            { label: "Jumlah Penerima BNPT", value: grandTotal?.bnpt || 'xxxx', color: "from-[#0f2027] to-[#2c5364]" },
-            { label: "Jumlah Penerima BST", value: grandTotal?.bst || 'xxxx', color: "from-[#09203f] to-[#537895]" },
-            { label: "Jumlah Penerima PKH", value: grandTotal?.pkh || 'xxxx', color: "from-[#1e3c72] to-[#2a5298]" },
-            { label: "Jumlah Penerima Sembako", value: grandTotal?.sembako || 'xxxx', color: "from-[#141e30] to-[#243b55]" },
-            { label: "Jumlah Penerima Prakerja", value: grandTotal?.prakerja || 'xxxx', color: "from-[#2c3e50] to-[#3498db]" },
-            { label: "Jumlah Penerima KUR", value: grandTotal?.kur || 'xxxx', color: "from-[#000428] to-[#004e92]" },
-            { label: "Jumlah Penerima CBP", value: grandTotal?.cbp || 'xxxx', color: "from-[#283e51] to-[#485563]" },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className={`px-4 py-2 rounded-xl shadow-md bg-gradient-to-r ${item.color} transform hover:scale-[1.02] transition`}
-            >
-              <h2 className="text-xl font-extrabold text-white drop-shadow">{item.value}</h2>
-              <p className="text-sm text-white/90">{item.label}</p>
-            </div>
-          ))}
+        <aside className="top-0 left-0 lg:w-1/5 lg:h-[calc(100vh-8rem)] lg:overflow-y-auto bg-gray-800 p-4 rounded-lg space-y-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
+            {[
+              { label: "Jumlah Penerima BNPT", value: grandTotal?.bnpt || 'xxxx', color: "from-[#0f2027] to-[#2c5364]" },
+              { label: "Jumlah Penerima BST", value: grandTotal?.bst || 'xxxx', color: "from-[#09203f] to-[#537895]" },
+              { label: "Jumlah Penerima PKH", value: grandTotal?.pkh || 'xxxx', color: "from-[#1e3c72] to-[#2a5298]" },
+              { label: "Jumlah Penerima Sembako", value: grandTotal?.sembako || 'xxxx', color: "from-[#141e30] to-[#243b55]" },
+              { label: "Jumlah Penerima Prakerja", value: grandTotal?.prakerja || 'xxxx', color: "from-[#2c3e50] to-[#3498db]" },
+              { label: "Jumlah Penerima KUR", value: grandTotal?.kur || 'xxxx', color: "from-[#000428] to-[#004e92]" },
+              { label: "Jumlah Penerima CBP", value: grandTotal?.cbp || 'xxxx', color: "from-[#283e51] to-[#485563]" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className={`px-4 py-2 rounded-xl shadow-md bg-gradient-to-r ${item.color} transform hover:scale-[1.02] transition`}
+              >
+                <h2 className="text-xl font-extrabold text-white drop-shadow">{item.value}</h2>
+                <p className="text-sm text-white/90">{item.label}</p>
+              </div>
+            ))}
+          </div>
 
           {/* Balai */}
           <div className="flex flex-col gap-4 items-center justify-center p-6 
@@ -449,7 +451,7 @@ export default function App() {
 
             {/* List Balai */}
             <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs">
+              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs hidden md:block">
                 <img
                   src="/articles/balai/Balai KB Pahae Julu.jpg"
                   alt="Balai KB Pahae Julu"
@@ -491,7 +493,7 @@ export default function App() {
 
             {/* List Puskesma */}
             <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs">
+              <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden w-full max-w-xs hidden md:block">
                 <img
                   src="/articles/puskesmas/Puskesmas Garoga.jpg"
                   alt="Puskesmas Garoga"
@@ -551,7 +553,7 @@ export default function App() {
 
         {/* Main content */}
         <main className="flex-1 flex flex-col">
-          <div className="flex justify-between bg-gray-800 p-3 rounded-lg mb-2 gap-3">
+          <div className="flex flex-col lg:flex-row justify-between bg-gray-800 p-3 rounded-lg mb-2 gap-3">
             <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
               <div className="py-2 px-1 rounded-xl bg-gray-700 shadow-2xl border border-gray-600 text-center transition-transform transform hover:-translate-y-1 flex flex-col justify-center items-center">
                 <h2 className="text-lg font-bold text-white">{grandTotal?.data_stunting || "XXXX"}</h2>
@@ -620,7 +622,7 @@ export default function App() {
         </main>
 
         {/* Sidebar kanan */}
-        <aside className="w-1/5 bg-gray-800 p-4 rounded-lg h-[calc(100vh-8rem)] overflow-y-auto flex flex-col">
+        <aside className="w-full lg:w-1/5 bg-gray-800 p-4 rounded-lg h-auto lg:h-[calc(100vh-8rem)] lg:overflow-y-auto flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <h3 className="font-bold mb-2">Detail Data Terpilih</h3>
 
