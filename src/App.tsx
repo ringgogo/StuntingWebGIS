@@ -408,9 +408,11 @@ export default function App() {
           </div>
           <div>
             <a
-              href="/https://drive.google.com/file/d/1vAE72bD-Mgt91CTidN6L_7SM-jSwqurK/view"
+              href="https://drive.google.com/file/d/1vAE72bD-Mgt91CTidN6L_7SM-jSwqurK/view"
               className="text-gray-300 hover:text-white transition-colors"
               title="Buku Stunting"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <BookOpen className="w-7 h-7" />
             </a>
