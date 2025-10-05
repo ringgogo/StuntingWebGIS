@@ -5,7 +5,8 @@ import PopupTable from "./components/PopupTable";
 import PopupBalai from "./components/PopupBalai";
 import { fetchGoogleSheetData } from "./service/GoogleSheet";
 import PopupPuskesmas from "./components/PopupPuskesmas";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Globe } from "lucide-react";
+import PopupPublikasi from "./components/PopupPublikasi";
 
 type MapOption = {
   value: string;
@@ -73,6 +74,7 @@ export default function App() {
   const [popup, setPopup] = useState<{ title: string; data: any } | null>(null);
   const [popupBalai, setPopupBalai] = useState<boolean>(false);
   const [popupPuskesmas, setPopupPuskesmas] = useState<boolean>(false);
+  const [popupPublikasi, setPopupPublikasi] = useState<boolean>(false);
 
   const [sheetData, setSheetData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -406,7 +408,13 @@ export default function App() {
               </p>
             </div>
           </div>
-          <div>
+          <div className="flex gap-2">
+            <div>
+              <Globe 
+                className="w-7 h-7 text-gray-300 hover:text-white transition-colors"
+                onClick={() => setPopupPublikasi(true)} 
+              />
+            </div>
             <a
               href="https://drive.google.com/file/d/1vAE72bD-Mgt91CTidN6L_7SM-jSwqurK/view"
               className="text-gray-300 hover:text-white transition-colors"
@@ -767,6 +775,12 @@ export default function App() {
       {popupPuskesmas && (
         <PopupPuskesmas
           onClose={() => setPopupPuskesmas(false)}
+        />
+      )}
+
+      {popupPublikasi && (
+        <PopupPublikasi
+          onClose={() => setPopupPublikasi(false)}
         />
       )}
     </div>
