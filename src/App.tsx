@@ -139,7 +139,6 @@ export default function App() {
             );
             setTotalData(extractTotalData(desaData));
           }
-          console.log(totalData)
         } catch (err) {
           console.error(err);
           setSheetData([]);
