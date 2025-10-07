@@ -54,9 +54,22 @@ export default function PopupPublikasi({ onClose }: PopupPublikasiProps) {
         </button>
 
         {/* Title */}
-        <h2 className="text-xl font-bold mb-4 text-left">
+        <h2 className="text-xl font-bold mb-2 text-left">
           Daftar Publikasi Stunting
         </h2>
+        <div 
+          className="text-md mb-4 text-blue-500 hover:text-blue-300 cursor-pointer"
+          onClick=
+          {
+            () =>
+              window.open(
+                "https://docs.google.com/document/d/1WQ6g-LgzycKHi_RhWzkl5l0ouR-Vr84f/edit?usp=sharing&ouid=106512193936314426030&rtpof=true&sd=true",
+                "_blank"
+              )
+          }
+        >
+          Baca Selengkapnya
+        </div>
 
         {loading ? (
           <p className="text-center text-gray-300">Memuat data dari Google Drive...</p>
@@ -65,11 +78,11 @@ export default function PopupPublikasi({ onClose }: PopupPublikasiProps) {
             {files.map((file) => (
               <div
                 key={file.id}
-                className="bg-gray-800 rounded-lg shadow-md flex flex-col"
+                className="bg-gray-800 rounded-lg shadow-md flex flex-col transform transition-transform duration-300 ease-out hover:scale-95"
               >
                 <a href={file.webViewLink} target="_blank" rel="noopener noreferrer">
                   <img
-                    src={file.thumbnailLink}
+                    src={`https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`}
                     alt={file.name.replace(/\.[^/.]+$/, "")}
                     className="w-full h-40 object-cover rounded-t-lg"
                   />

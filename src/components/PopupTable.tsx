@@ -35,7 +35,7 @@ export default function PopupTable({ title, data, onClose }: PopupTableProps) {
             <tbody>
               {Object.entries(data).map(([key, value], i) => (
                 <tr key={i} className="odd:bg-gray-50">
-                  <td className="border px-2 py-1 font-medium">{key}</td>
+                  <td className="border px-2 py-1 font-medium">{key.replace(/_/g, " ")}</td>
                   <td className="border px-2 py-1">{String(value)}</td>
                 </tr>
               ))}
