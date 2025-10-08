@@ -28,6 +28,20 @@ type TotalData = {
   under_weight: string;
 }
 
+const kelurahanList = [
+  "Partoli Toruan",
+  "Hutatoruan V",
+  "Hutatoruan VI",
+  "Hutatoruan VII",
+  "Hutatoruan IX",
+  "Hutatoruan X",
+  "Hutatoruan XI",
+  "Situmeang Habinsaran",
+  "Onan Hasang",
+  "Pasar Sarulla",
+  "Pasar Siborong-Borong",
+];
+
 const mapOptions: MapOption[] = [
   { value: "Batas Kecamatan.geojson", labelField: "WADMKC", label: "Batas Kecamatan" },
   { value: "KEL GAROGA.geojson", labelField: "NAMOBJ", label: "Kecamatan Garoga" },
@@ -616,7 +630,9 @@ export default function App() {
                     <option value="">-- Pilih Desa / Kelurahan --</option>
                     {(areas[selected.label.replace("Kecamatan ", "")] || []).map((kel) => (
                       <option key={kel} value={kel}>
-                        Kelurahan {capitalizeWords(kel)}
+                        {kelurahanList.includes(kel)
+                          ? `Kelurahan ${capitalizeWords(kel)}`
+                          : `Desa ${capitalizeWords(kel)}`}
                       </option>
                     ))}
                   </select>
