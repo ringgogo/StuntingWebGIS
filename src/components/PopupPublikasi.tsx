@@ -63,7 +63,7 @@ export default function PopupPublikasi({ onClose }: PopupPublikasiProps) {
           {
             () =>
               window.open(
-                "https://docs.google.com/document/d/1WQ6g-LgzycKHi_RhWzkl5l0ouR-Vr84f/edit?usp=sharing&ouid=106512193936314426030&rtpof=true&sd=true",
+                "https://drive.google.com/drive/folders/1pfMPxd97XzldGQ2YEfTmL49hMBGFLbnT",
                 "_blank"
               )
           }
