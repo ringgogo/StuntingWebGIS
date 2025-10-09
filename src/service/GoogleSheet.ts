@@ -15,7 +15,7 @@ function sanitizeKey(s: string): string {
 
 export async function fetchGoogleSheetData(sheetName: string): Promise<SheetRow[]> {
   const SHEET_ID = import.meta.env.VITE_SHEET_ID;
-  const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+  const API_KEY = import.meta.env.VITE_GOOGLE_SHEET_API_KEY;
 
   if (!SHEET_ID || !API_KEY) {
     throw new Error("Missing SHEET_ID or GOOGLE_API_KEY in .env");
@@ -26,7 +26,7 @@ export async function fetchGoogleSheetData(sheetName: string): Promise<SheetRow[
   )}?key=${API_KEY}`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch: ${res}`);
   const json = await res.json();
 
   const values: string[][] = json.values || [];

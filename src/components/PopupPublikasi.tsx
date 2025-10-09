@@ -16,7 +16,7 @@ export default function PopupPublikasi({ onClose }: PopupPublikasiProps) {
   const [loading, setLoading] = useState(true);
 
   const FOLDER_ID = import.meta.env.VITE_DRIVE_ID;
-  const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+  const API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY;
 
   useEffect(() => {
     async function fetchDriveFiles() {
